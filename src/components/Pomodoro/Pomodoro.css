@@ -1,0 +1,117 @@
+.container{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+  padding: 30px;
+  min-height: 100vh;
+}
+
+.container h1{
+  text-align: center;
+  margin: 5px;
+}
+
+.pomodoro{
+  color:white;
+  margin: 5px;
+  font-size: 48px;
+  font-weight: bold;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+
+.container .longBreak {
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.task {
+  margin-top: 15px;
+}
+
+.labelTask {
+  margin: 8px;
+}
+
+.buttonsPomodoro {
+  text-align: center;
+}
+
+.textWork {
+  color: rgb(217, 85, 80);
+}
+
+.textBreak {
+  color: rgb(76, 145, 149);
+}
+
+.textLongBreak {
+  color: rgb(69, 124, 163);
+}
+
+.btnPomodoro {
+  cursor: pointer;
+  border: none;
+  margin: 20px;
+  padding: 0px 12px;
+  border-radius: 4px;
+  box-shadow: #ebebeb 0px 6px 0px;
+  font-family: ArialRounded;
+  font-size: 22px;
+  height: 55px;
+  font-weight: bold;
+  width: 200px;
+  background-color: white;
+  transition: color 0.5s ease-in-out 0s;
+}
+
+.btnPomodoro:disabled:hover,
+.btnPomodoro[disabled] {
+  border: 1px solid #999999;
+  color: #666666;
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.modeWork {
+  background: rgb(217, 85, 80);
+}
+
+.modeBreak{
+  background: rgb(76, 145, 149);
+}
+
+.modeLongBreak {
+  background: rgb(69, 124, 163);
+}
+
+.btnLongBreak {
+  cursor: pointer;
+  border: none;
+  margin: 20px;
+  padding: 0px 12px;
+  border-radius: 4px;
+  box-shadow: rgb(235 235 235) 0px 6px 0px;
+  font-family: ArialRounded;
+  font-size: 22px;
+  height: 55px;
+  font-weight: bold;
+  width: 200px;
+  background-color: white;
+  transition: color 0.5s ease-in-out 0s;
+}
+
+.fifteen[disabled] {
+  border: 1px solid #999999;
+  color: #666666;
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+.twenty[disabled] {
+  border: 1px solid #999999;
+  color: #666666;
+  background: #cccccc;
+  cursor: not-allowed;
+}
