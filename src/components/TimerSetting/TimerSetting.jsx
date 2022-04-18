@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
 	useDisclosure,
 	Modal,
@@ -11,59 +11,47 @@ import {
 	Button,
 	FormControl,
 	FormLabel,
-	Input,
 	Badge,
 	Slider,
 	SliderTrack,
 	SliderFilledTrack,
 	SliderThumb,
 	Tooltip,
+	NumberInput,
+	NumberInputField,
+	NumberInputStepper,
+	NumberIncrementStepper,
+	NumberDecrementStepper,
 } from '@chakra-ui/react'
 import { FiSettings } from 'react-icons/fi'
+import usePomodoroContext from '../../hooks/usePomodoroContext'
 
-const TimerSetting = ({
-	pomodoro,
-	shortBreak,
-	longBreak,
-	setPomodoro,
-	setShortBreak,
-	setLongBreak,
-	setMaxPomodoro,
-	setMaxLongBreak,
-	setMaxShortBreak,
-	setVolume,
-	volume,
-}) => {
-	const [values, setValues] = useState({
-		pomodoro: pomodoro / 60,
-		shortBreak: shortBreak / 60,
-		longBreak: longBreak / 60,
-	})
+const TimerSetting = () => {
+	const { pomodoroTime, updatePomodoro } = usePomodoroContext()
 	const { isOpen, onOpen, onClose } = useDisclosure()
-	const [sliderValue, setSliderValue] = useState(volume)
 	const [showTooltip, setShowTooltip] = useState(false)
 
-	const handleChange = e => {
-		setValues({
-			...values,
-			[e.target.name]: e.target.value,
-		})
-	}
+	const [valuePomodoro, setValuePomodoro] = useState(
+		pomodoroTime.maxPomodoro / 60
+	)
+	const [valueShortBreak, setValueShortBreak] = useState(
+		pomodoroTime.maxShortBreak / 60
+	)
+	const [valueLongBreak, setValueLongBreak] = useState(
+		pomodoroTime.maxLongBreak / 60
+	)
+	const [sliderValue, setSliderValue] = useState(pomodoroTime.volume)
 
 	const handleSubmit = e => {
 		e.preventDefault()
-		const { pomodoro, shortBreak, longBreak } = values
-		window.localStorage.setItem('pomodoro', pomodoro)
-		window.localStorage.setItem('longBreak', longBreak)
-		window.localStorage.setItem('shortBreak', shortBreak)
+
+		updatePomodoro(valuePomodoro, valueLongBreak, valueShortBreak, sliderValue)
+
+		window.localStorage.setItem('pomodoro', valuePomodoro)
+		window.localStorage.setItem('longBreak', valueLongBreak)
+		window.localStorage.setItem('shortBreak', valueShortBreak)
 		window.localStorage.setItem('volume', sliderValue)
-		setPomodoro(pomodoro * 60)
-		setMaxPomodoro(pomodoro * 60)
-		setShortBreak(shortBreak * 60)
-		setMaxShortBreak(shortBreak * 60)
-		setLongBreak(longBreak * 60)
-		setMaxLongBreak(longBreak * 60)
-		setVolume(sliderValue)
+
 		onClose()
 	}
 
@@ -98,36 +86,51 @@ const TimerSetting = ({
 					<ModalBody pb={6}>
 						<FormControl mt={4}>
 							<FormLabel>Pomodoro</FormLabel>
-							<Input
-								id='pomodoro'
-								name='pomodoro'
-								defaultValue={values.pomodoro}
-								onChange={handleChange}
-							/>
+							<NumberInput
+								value={valuePomodoro}
+								min={1}
+								onChange={value => setValuePomodoro(value)}
+							>
+								<NumberInputField />
+								<NumberInputStepper>
+									<NumberIncrementStepper />
+									<NumberDecrementStepper />
+								</NumberInputStepper>
+							</NumberInput>
 						</FormControl>
 						<FormControl mt={4}>
 							<FormLabel>Short Break</FormLabel>
-							<Input
-								id='shortBreak'
-								name='shortBreak'
-								defaultValue={values.shortBreak}
-								onChange={handleChange}
-							/>
+							<NumberInput
+								min={1}
+								value={valueShortBreak}
+								onChange={value => setValueShortBreak(value)}
+							>
+								<NumberInputField />
+								<NumberInputStepper>
+									<NumberIncrementStepper />
+									<NumberDecrementStepper />
+								</NumberInputStepper>
+							</NumberInput>
 						</FormControl>
 						<FormControl mt={4}>
 							<FormLabel>Long Break</FormLabel>
-							<Input
-								id='longBreak'
-								name='longBreak'
-								defaultValue={values.longBreak}
-								onChange={handleChange}
-							/>
+							<NumberInput
+								min={1}
+								value={valueLongBreak}
+								onChange={value => setValueLongBreak(value)}
+							>
+								<NumberInputField />
+								<NumberInputStepper>
+									<NumberIncrementStepper />
+									<NumberDecrementStepper />
+								</NumberInputStepper>
+							</NumberInput>
 						</FormControl>
 						<FormControl mt={4}>
 							<FormLabel>Alert volume</FormLabel>
 							<Slider
 								id='slider'
-								defaultValue={volume}
+								defaultValue={pomodoroTime.volume}
 								min={0}
 								max={100}
 								name='volume'
@@ -166,9 +169,7 @@ const TimerSetting = ({
 							mr={3}
 							onClick={handleSubmit}
 							disabled={
-								values.pomodoro < 1 ||
-								values.shortBreak < 1 ||
-								values.longBreak < 1
+								valuePomodoro < 1 || valueShortBreak < 1 || valueLongBreak < 1
 							}
 						>
 							Save
@@ -180,4 +181,4 @@ const TimerSetting = ({
 	)
 }
 
-export default TimerSetting
+export default React.memo(TimerSetting)

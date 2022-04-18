@@ -1,15 +1,21 @@
-import { useState } from 'react'
+import useModeContext from './hooks/useModeContext'
 import { Route, Routes } from 'react-router-dom'
 import { Stack, Container } from '@chakra-ui/react'
 import Home from './pages/Home/Home.jsx'
 import History from './pages/History/History.jsx'
 
 function App() {
-	const [mode, setMode] = useState('modeWork')
+	const { mode } = useModeContext()
 
 	return (
 		<Stack
-			className={mode}
+			background={
+				mode.mode === 'modeWork'
+					? 'bgWork'
+					: mode.mode === 'modeBreak'
+					? 'bgBreak'
+					: 'bgLongBreak'
+			}
 			minHeight='100vh'
 			display='flex'
 			flexDirection='column'
@@ -17,7 +23,7 @@ function App() {
 		>
 			<Container maxW='container.lg' padding='30px' minHeight='100vh'>
 				<Routes>
-					<Route path='/' element={<Home setMode={setMode} mode={mode} />} />
+					<Route path='/' element={<Home />} />
 					<Route path='history' element={<History />} />
 				</Routes>
 			</Container>

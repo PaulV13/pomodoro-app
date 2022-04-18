@@ -1,15 +1,28 @@
+import React from 'react'
 import { Button } from '@chakra-ui/react'
+import useModeContext from '../../hooks/useModeContext'
 
-const ButtonCustom = ({ onClick, text, color, disabled }) => {
+const ButtonCustom = ({ onClick, text, disabled }) => {
+	const { mode } = useModeContext()
+
+	const handleClick = () => {
+		onClick()
+	}
+
 	return (
 		<Button
 			cursor='pointer'
 			border='none'
 			m='20px'
 			px='12px'
-			color={color}
+			color={
+				mode.mode === 'modeWork'
+					? 'bgWork'
+					: mode.mode === 'modeBreak'
+					? 'bgBreak'
+					: 'bgLongBreak'
+			}
 			borderRadius='4px'
-			boxShadow='#ebebeb 0px 6px 0px'
 			fontFamily='ArialRounded'
 			fontSize='22px'
 			height='55px'
@@ -17,7 +30,7 @@ const ButtonCustom = ({ onClick, text, color, disabled }) => {
 			width='200px'
 			backgroundColor='white'
 			transition='color 0.5s ease-in-out 0s'
-			onClick={onClick}
+			onClick={handleClick}
 			disabled={disabled}
 			_disabled={{
 				border: '1px solid #999999',
@@ -25,16 +38,13 @@ const ButtonCustom = ({ onClick, text, color, disabled }) => {
 				backgroundColor: '#cccccc',
 				cursor: 'not-allowed',
 			}}
-			_hover={{
-				_disabled: {
-					bg: '#cccccc',
-				},
-			}}
-			_focus={{ boxShadow: '#ebebeb 0px 6px 0px' }}
+			_hover={{}}
+			_focus={{}}
+			_active={{}}
 		>
 			{text}
 		</Button>
 	)
 }
 
-export default ButtonCustom
+export default React.memo(ButtonCustom)

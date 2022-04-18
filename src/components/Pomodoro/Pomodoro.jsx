@@ -1,429 +1,240 @@
-import {
-	Text,
-	CircularProgress,
-	CircularProgressLabel,
-	Box,
-	Flex,
-	Input,
-	Link,
-	Button,
-	Alert,
-	AlertIcon,
-} from '@chakra-ui/react'
-import { Link as RouterLink } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import alarma from '../../assets/telefono.mp3'
-import apretarBoton from '../../assets/apretar-boton.mp3'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Box, Flex, HStack, Text, useToast } from '@chakra-ui/react'
 import ButtonCustom from '../../components/ButtonCustom/ButtonCustom.jsx'
-import './Pomodoro.css'
-import { BsClockHistory } from 'react-icons/bs'
+import useModeContext from '../../hooks/useModeContext'
+import CircularProgressCustom from '../CircularProgressCustom/CircularProgressCustom'
+import FormPomodoro from '../FormPomodoro/FormPomodoro'
+import usePomodoroContext from '../../hooks/usePomodoroContext'
+import usePomodoro from '../../hooks/usePomodoro.js'
+import useTask from '../../hooks/useTask.js'
+import { MdTaskAlt } from 'react-icons/md'
 
-import TimerSetting from '../TimerSetting/TimerSetting'
-
-const Pomodoro = ({ mode, setMode }) => {
-	const [pomodoro, setPomodoro] = useState()
-	const [shortBreak, setShortBreak] = useState()
-	const [longBreak, setLongBreak] = useState()
-	const [maxPomodoro, setMaxPomodoro] = useState()
-	const [maxShortBreak, setMaxShortBreak] = useState()
-	const [maxLongBreak, setMaxLongBreak] = useState()
-	const [starting, setStarting] = useState(false)
-	const [status, setStatus] = useState('Work')
-	const [intervalIdPomodoro, setIntervalIdPomodoro] = useState(null)
-	const [intervalIdShort, setIntervalIdShort] = useState(null)
-	const [intervalIdLong, setIntervalIdLong] = useState(null)
-	const [count, setCount] = useState(1)
-	const [restart, setRestart] = useState(false)
-	const [task, setTask] = useState('')
-	const [tasks, setTasks] = useState([])
+const Pomodoro = () => {
+	const { pomodoroTime } = usePomodoroContext()
+	const { mode, toggleMode, resetMode } = useModeContext()
+	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
+	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
+	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
 	const [time, setTime] = useState(0)
-	const [dateStart, setDateStart] = useState()
-	const [disableStop, setDisableStop] = useState(true)
-	const [disableInput, setDisableInput] = useState()
-	const [message, setMessage] = useState('')
-	const [volume, setVolume] = useState()
+	const [task, setTask] = useState('')
+	const {
+		startPomodoro,
+		pausePomodoro,
+		restartPomodoro,
+		focusForm,
+		stopPomodoro,
+		nextPomodoro,
+		pomodoroSetting,
+		submitForm,
+	} = usePomodoro()
+	const { tasks, addTask } = useTask()
+	const toast = useToast()
+	const starting = useRef(false)
+	const restart = useRef(false)
 
 	useEffect(() => {
-		setMode('modeWork')
-		const localTasks = JSON.parse(window.localStorage.getItem('tasks'))
-		const localStoragePomodoro = window.localStorage.getItem('pomodoro')
-		const localStorageShortBreak = window.localStorage.getItem('shortBreak')
-		const localStorageLongBreak = window.localStorage.getItem('longBreak')
-		const localStorageVolume = window.localStorage.getItem('volume')
+		setPomodoro(pomodoroTime.maxPomodoro)
+		setShortBreak(pomodoroTime.maxShortBreak)
+		setLongBreak(pomodoroTime.maxLongBreak)
+	}, [
+		pomodoroTime.maxLongBreak,
+		pomodoroTime.maxPomodoro,
+		pomodoroTime.maxShortBreak,
+	])
 
-		if (localTasks !== null) {
-			setTasks(localTasks)
-		}
+	useEffect(() => {
+		window.localStorage.setItem('tasks', JSON.stringify(tasks))
+	}, [tasks])
 
-		if (localStoragePomodoro !== null) {
-			setPomodoro(parseInt(localStoragePomodoro) * 60)
-			setMaxPomodoro(parseInt(localStoragePomodoro) * 60)
-			setShortBreak(parseInt(localStorageShortBreak) * 60)
-			setMaxShortBreak(parseInt(localStorageShortBreak) * 60)
-			setLongBreak(parseInt(localStorageLongBreak) * 60)
-			setMaxLongBreak(parseInt(localStorageLongBreak) * 60)
-			setVolume(parseFloat(localStorageVolume))
-		} else {
-			setPomodoro(25 * 60)
-			setMaxPomodoro(25 * 60)
-			setShortBreak(5 * 60)
-			setMaxShortBreak(5 * 60)
-			setLongBreak(15 * 60)
-			setMaxLongBreak(15 * 60)
-			setVolume(20)
+	useEffect(() => {
+		const intervalId = setInterval(() => {
+			if (starting.current) {
+				if (mode.mode === 'modeWork') {
+					nextPomodoro(false)
+					setPomodoro(prevPomodoro => prevPomodoro - 1)
+				}
+				if (mode.mode === 'modeBreak') {
+					nextPomodoro(true)
+					setShortBreak(prevShortBreak => prevShortBreak - 1)
+				}
+				if (mode.mode === 'modeLongBreak') {
+					nextPomodoro(true)
+					setLongBreak(prevLongBreak => prevLongBreak - 1)
+				}
+				setTime(time => time + 1)
+			} else {
+				clearInterval(intervalId)
+			}
+		}, 1000)
+
+		return () => {
+			clearInterval(intervalId)
 		}
-	}, [])
+	}, [mode.mode, nextPomodoro])
+
+	const playAlarma = useCallback(() => {
+		const audio = document.getElementById('alarma')
+		audio.volume = pomodoroTime.volume / 100
+		audio.play()
+	}, [pomodoroTime.volume])
+
+	const playStart = useCallback(() => {
+		const audio = document.getElementById('playStart')
+		audio.volume = pomodoroTime.volume / 100
+		audio.play()
+	}, [pomodoroTime.volume])
+
+	const resetPomodoro = useCallback(() => {
+		setPomodoro(pomodoroTime.maxPomodoro)
+		setShortBreak(pomodoroTime.maxShortBreak)
+		setLongBreak(pomodoroTime.maxLongBreak)
+	}, [
+		pomodoroTime.maxLongBreak,
+		pomodoroTime.maxPomodoro,
+		pomodoroTime.maxShortBreak,
+	])
+
+	const handleNext = useCallback(() => {
+		playStart()
+		toggleMode()
+		resetPomodoro()
+
+		if (starting.current) {
+			if (mode.mode === 'modeBreak' || mode.mode === 'modeLongBreak') {
+				nextPomodoro(false)
+			} else {
+				nextPomodoro(true)
+			}
+		}
+	}, [playStart, toggleMode, resetPomodoro, starting, mode.mode, nextPomodoro])
 
 	useEffect(() => {
 		if (pomodoro === 0 || shortBreak === 0 || longBreak === 0) {
 			playAlarma()
 			handleNext()
 		}
-	}, [pomodoro, shortBreak, longBreak])
+	}, [playAlarma, handleNext, pomodoro, shortBreak, longBreak])
 
-	useEffect(() => {
-		window.localStorage.setItem('tasks', JSON.stringify(tasks))
-	}, [tasks])
-
-	const handleStartOrPause = () => {
+	const handleStartOrPause = useCallback(() => {
 		playStart()
-		setDisableInput(true)
-		setDisableStop(false)
-		setStarting(!starting)
 
-		if (!restart) {
-			setRestart(true)
-			setDateStart(new Date(Date.now()))
-		}
+		starting.current = !starting.current
 
-		if (!starting) {
-			if (status === 'Work') {
-				const intervalId = setInterval(() => {
-					setPomodoro(pomodoro => pomodoro - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdPomodoro(intervalId)
-				setShortBreak(maxShortBreak)
-				setLongBreak(maxLongBreak)
-			} else if (status === 'Break') {
-				const intervalId = setInterval(() => {
-					setShortBreak(shortBreak => shortBreak - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdShort(intervalId)
-				setPomodoro(maxPomodoro)
-				setLongBreak(maxLongBreak)
-			} else {
-				const intervalId = setInterval(() => {
-					setLongBreak(longBreak => longBreak - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdLong(intervalId)
-				setPomodoro(maxPomodoro)
-				setShortBreak(maxShortBreak)
+		if (starting.current) {
+			// action start pomodoro
+			startPomodoro()
+
+			if (!restart.current) {
+				// action restart pomodoro
+				restartPomodoro(new Date(Date.now()))
+				restart.current = true
 			}
 		} else {
-			setDisableInput(false)
-			clearInterval(intervalIdPomodoro)
-			clearInterval(intervalIdShort)
-			clearInterval(intervalIdLong)
+			// action pause pomodoro
+			pausePomodoro()
 		}
-	}
+	}, [pausePomodoro, playStart, restartPomodoro, startPomodoro])
 
-	const handleNext = () => {
+	const handleStop = useCallback(() => {
 		playStart()
-		if (mode === 'modeBreak') {
-			setMode('modeWork')
-			setStatus('Work')
-			setShortBreak(maxShortBreak)
-			setCount(count => count + 1)
-		}
-		if (mode === 'modeWork') {
-			setMode('modeBreak')
-			setStatus('Break')
-			setPomodoro(maxPomodoro)
-			if (count % 4 === 0) {
-				setMode('modeLongBreak')
-				setStatus('Long break')
-			}
-		}
-		if (mode === 'modeLongBreak') {
-			setMode('modeWork')
-			setStatus('Work')
-			setLongBreak(maxLongBreak)
-			setCount(count => count + 1)
-		}
-		if (starting) {
-			if (mode === 'modeBreak') {
-				const intervalId = setInterval(() => {
-					setPomodoro(pomodoro => pomodoro - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdPomodoro(intervalId)
-				clearInterval(intervalIdShort)
-			}
-
-			if (mode === 'modeWork') {
-				const intervalId = setInterval(() => {
-					setShortBreak(shortBreak => shortBreak - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdShort(intervalId)
-				clearInterval(intervalIdPomodoro)
-				if (count % 4 === 0) {
-					const intervalId = setInterval(() => {
-						setLongBreak(longBreak => longBreak - 1)
-						setTime(time => time + 1)
-					}, 1000)
-					setIntervalIdLong(intervalId)
-				}
-			}
-
-			if (mode === 'modeLongBreak') {
-				const intervalId = setInterval(() => {
-					setPomodoro(pomodoro => pomodoro - 1)
-					setTime(time => time + 1)
-				}, 1000)
-				setIntervalIdPomodoro(intervalId)
-				clearInterval(intervalIdLong)
-			}
-		}
-	}
-
-	const handleStop = () => {
-		playStart()
-		setRestart(false)
-		setDisableInput(false)
-		setDisableStop(true)
-		setPomodoro(maxPomodoro)
-		setLongBreak(maxLongBreak)
-		setShortBreak(maxShortBreak)
-		setCount(1)
-		clearInterval(intervalIdPomodoro)
-		clearInterval(intervalIdShort)
-		clearInterval(intervalIdLong)
-		setStarting(false)
 		const newTask = {
-			dateStart: dateStart,
+			dateStart: pomodoroSetting.dateStart,
 			dateFin: new Date(Date.now()),
 			name: task,
 			time,
 		}
-		setTasks(tasks => tasks.concat(newTask))
+		addTask(newTask)
+		starting.current = false
+		restart.current = false
+		stopPomodoro()
+		resetPomodoro()
 		setTask('')
 		setTime(0)
-		setMode('modeWork')
-		setStatus('Work')
-		setMessage('Task saved in the history!!!!')
-		setTimeout(() => {
-			setMessage('')
-		}, 2000)
-	}
+		resetMode()
+		toast({
+			status: 'success',
+			duration: 2000,
+			isClosable: true,
+			render: () => (
+				<Box
+					bg='brand.900'
+					color='white'
+					py={4}
+					px={3}
+					borderRadius='8px'
+					textAlign='center'
+				>
+					<HStack justifyContent='center'>
+						<MdTaskAlt />
+						<Text>Task saved in the history!!!!</Text>
+					</HStack>
+				</Box>
+			),
+		})
+	}, [
+		addTask,
+		playStart,
+		pomodoroSetting.dateStart,
+		resetMode,
+		resetPomodoro,
+		stopPomodoro,
+		task,
+		time,
+		toast,
+	])
 
-	const segundosAMinutos = segundos => {
-		let minute = Math.floor(segundos / 60)
-		minute = minute < 10 ? '0' + minute : minute
-		let second = segundos % 60
-		second = second < 10 ? '0' + second : second
-		return minute + ':' + second
-	}
+	const handleSubmit = useCallback(
+		({ task, oldTask }) => {
+			setTask(task)
+			submitForm()
+			if (oldTask !== task) {
+				setTime(0)
+				resetPomodoro()
+			}
+		},
+		[resetPomodoro, submitForm]
+	)
 
-	const handleChangeTask = e => {
-		setTask(e.target.value)
-		if (status === 'Work') {
-			setPomodoro(pomodoro)
-			setTime(0)
-		}
-		if (status === 'Break') {
-			setPomodoro(shortBreak)
-			setTime(0)
-		}
-		if (status === 'Long break') {
-			setPomodoro(longBreak)
-			setTime(0)
-		}
-	}
-
-	const playAlarma = () => {
-		const audio = document.getElementById('alarma')
-		audio.volume = volume / 100
-		audio.play()
-	}
-
-	const playStart = () => {
-		const audio = document.getElementById('playStart')
-		audio.volume = volume / 100
-		audio.play()
+	const handleFocus = () => {
+		focusForm()
 	}
 
 	return (
-		<>
-			<Flex justifyContent='space-around'>
-				<Text
-					textAlign='center'
-					color='brand.900'
-					fontSize='32px'
-					fontWeight='bold'
-				>
-					Pomodoro
-				</Text>
-				{pomodoro && (
-					<TimerSetting
-						pomodoro={pomodoro}
-						shortBreak={shortBreak}
-						longBreak={longBreak}
-						setPomodoro={setPomodoro}
-						setShortBreak={setShortBreak}
-						setLongBreak={setLongBreak}
-						setMaxPomodoro={setMaxPomodoro}
-						setMaxShortBreak={setMaxShortBreak}
-						setMaxLongBreak={setMaxLongBreak}
-						setVolume={setVolume}
-						volume={volume}
-					/>
-				)}
-			</Flex>
-
-			<Text
-				textAlign='center'
-				color='brand.900'
-				fontSize='20px'
-				fontWeight='bold'
-			>
-				{status}
-			</Text>
-			<Text
-				textAlign='center'
-				color='brand.900'
-				fontSize='20px'
-				fontWeight='bold'
-			>
-				{count}
-			</Text>
-			<Box textAlign='center'>
-				<CircularProgress
-					value={
-						mode === 'modeWork'
-							? pomodoro
-							: mode === 'modeBreak'
-							? shortBreak
-							: longBreak
-					}
-					max={
-						mode === 'modeWork'
-							? maxPomodoro
-							: mode === 'modeBreak'
-							? maxShortBreak
-							: maxLongBreak
-					}
-					size='190px'
-					color={
-						mode === 'modeWork'
-							? '#8A0808'
-							: mode === 'modeBreak'
-							? '#086A87'
-							: '#0431B4'
-					}
-					thickness='5px'
-				>
-					<CircularProgressLabel
-						color='white'
-						fontSize='48px'
-						fontWeight='bold'
-						fontFamily="'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif"
-					>
-						{status === 'Work'
-							? segundosAMinutos(pomodoro)
-							: status === 'Break'
-							? segundosAMinutos(shortBreak)
-							: segundosAMinutos(longBreak)}
-					</CircularProgressLabel>
-				</CircularProgress>
-			</Box>
+		<Box textAlign='center'>
+			<CircularProgressCustom
+				pomodoro={pomodoro}
+				shortBreak={shortBreak}
+				longBreak={longBreak}
+			/>
 			<Flex
 				direction={{ base: 'column', sm: 'row', md: 'row', lg: 'row' }}
 				alignItems='center'
 				justifyContent='center'
 			>
 				<ButtonCustom
-					text={starting ? 'Pause' : 'Start'}
+					text={starting.current ? 'Pause' : 'Start'}
 					onClick={handleStartOrPause}
-					color={
-						mode === 'modeWork'
-							? '#d95550'
-							: mode === 'modeBreak'
-							? '#4c9195'
-							: '#457ca3'
-					}
-					disabled={!task}
+					disabled={pomodoroSetting.disableStart}
 				/>
 				<ButtonCustom
 					text='Stop'
 					onClick={handleStop}
-					color={
-						mode === 'modeWork'
-							? '#d95550'
-							: mode === 'modeBreak'
-							? '#4c9195'
-							: '#457ca3'
-					}
-					disabled={disableStop}
+					disabled={pomodoroSetting.disableStop}
 				/>
 				<ButtonCustom
 					text='Next'
 					onClick={handleNext}
-					color={
-						mode === 'modeWork'
-							? '#d95550'
-							: mode === 'modeBreak'
-							? '#4c9195'
-							: '#457ca3'
-					}
-					disabled={false}
+					disabled={pomodoroSetting.disableNext}
 				/>
 			</Flex>
-			<Box textAlign='center'>
-				<Input
-					w='50%'
-					onChange={handleChangeTask}
-					value={task}
-					disabled={disableInput}
-					placeholder='Write a task...'
-					_placeholder={{ color: 'brand.900' }}
-					color='brand.900'
-					mt={4}
-				/>
-			</Box>
-			<Link as={RouterLink} to='/history' color='brand.900'>
-				<Button
-					leftIcon={<BsClockHistory />}
-					color='brand.900'
-					variant='link'
-					_focus={{
-						boxShadow: 'none',
-					}}
-				>
-					History
-				</Button>
-			</Link>
-			<Flex justifyContent='center' mt={8}>
-				{message && (
-					<Alert
-						colorScheme='brand.900'
-						status='success'
-						w='350px'
-						borderRadius='4px'
-						color='white'
-					>
-						<AlertIcon />
-						{message}
-					</Alert>
-				)}
-			</Flex>
-
-			<audio id='alarma' src={alarma} />
-			<audio id='playStart' src={apretarBoton} />
-		</>
+			<FormPomodoro
+				onSubmit={handleSubmit}
+				onFocus={handleFocus}
+				disableForm={pomodoroSetting.disableForm}
+				task={task}
+				setTask={setTask}
+			/>
+		</Box>
 	)
 }
 
