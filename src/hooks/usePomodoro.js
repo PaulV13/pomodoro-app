@@ -5,11 +5,10 @@ const usePomodoro = () => {
 	const [pomodoroSetting, setButtonPomodoroSetting] = useReducer(
 		pomodoroReducer,
 		{
-			dateStart: undefined,
-			disableForm: undefined,
+			disableForm: false,
 			disableStop: true,
 			disableStart: true,
-			disableNext: true,
+			disableNext: false,
 		}
 	)
 
@@ -25,23 +24,9 @@ const usePomodoro = () => {
 		})
 	}
 
-	const restartPomodoro = dateStart => {
-		setButtonPomodoroSetting({
-			type: POMODORO_ACTIONS.RESTART_POMODORO,
-			dateStart,
-		})
-	}
-
 	const stopPomodoro = () => {
 		setButtonPomodoroSetting({
 			type: POMODORO_ACTIONS.STOP_POMODORO,
-		})
-	}
-
-	const nextPomodoro = disableStop => {
-		setButtonPomodoroSetting({
-			type: POMODORO_ACTIONS.NEXT_POMODORO,
-			disableStop,
 		})
 	}
 
@@ -61,9 +46,7 @@ const usePomodoro = () => {
 		pomodoroSetting,
 		startPomodoro,
 		pausePomodoro,
-		restartPomodoro,
 		stopPomodoro,
-		nextPomodoro,
 		focusForm,
 		submitForm,
 	}

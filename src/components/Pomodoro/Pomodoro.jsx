@@ -15,21 +15,20 @@ const Pomodoro = () => {
 	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
 	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
 	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
-	const [time, setTime] = useState(0)
 	const [task, setTask] = useState('')
 	const {
 		startPomodoro,
 		pausePomodoro,
-		restartPomodoro,
 		focusForm,
 		stopPomodoro,
-		nextPomodoro,
 		pomodoroSetting,
 		submitForm,
 	} = usePomodoro()
 	const { tasks, addTask } = useTask()
 	const toast = useToast()
-	const starting = useRef(false)
+	const [starting, setStarting] = useState(false)
+	const dateStart = useRef(null)
+	const time = useRef(0)
 	const restart = useRef(false)
 
 	useEffect(() => {
@@ -48,20 +47,18 @@ const Pomodoro = () => {
 
 	useEffect(() => {
 		const intervalId = setInterval(() => {
-			if (starting.current) {
+			if (starting) {
 				if (mode.mode === 'modeWork') {
-					nextPomodoro(false)
 					setPomodoro(prevPomodoro => prevPomodoro - 1)
 				}
 				if (mode.mode === 'modeBreak') {
-					nextPomodoro(true)
 					setShortBreak(prevShortBreak => prevShortBreak - 1)
 				}
 				if (mode.mode === 'modeLongBreak') {
-					nextPomodoro(true)
 					setLongBreak(prevLongBreak => prevLongBreak - 1)
 				}
-				setTime(time => time + 1)
+				// setTime(time => time + 1)
+				time.current = time.current + 1
 			} else {
 				clearInterval(intervalId)
 			}
@@ -70,8 +67,8 @@ const Pomodoro = () => {
 		return () => {
 			clearInterval(intervalId)
 		}
-	}, [mode.mode, nextPomodoro])
-
+	}, [mode.mode, pomodoro, starting])
+	console.log(pomodoro)
 	const playAlarma = useCallback(() => {
 		const audio = document.getElementById('alarma')
 		audio.volume = pomodoroTime.volume / 100
@@ -98,15 +95,7 @@ const Pomodoro = () => {
 		playStart()
 		toggleMode()
 		resetPomodoro()
-
-		if (starting.current) {
-			if (mode.mode === 'modeBreak' || mode.mode === 'modeLongBreak') {
-				nextPomodoro(false)
-			} else {
-				nextPomodoro(true)
-			}
-		}
-	}, [playStart, toggleMode, resetPomodoro, starting, mode.mode, nextPomodoro])
+	}, [playStart, toggleMode, resetPomodoro])
 
 	useEffect(() => {
 		if (pomodoro === 0 || shortBreak === 0 || longBreak === 0) {
@@ -118,38 +107,37 @@ const Pomodoro = () => {
 	const handleStartOrPause = useCallback(() => {
 		playStart()
 
-		starting.current = !starting.current
-
-		if (starting.current) {
+		if (!starting) {
 			// action start pomodoro
 			startPomodoro()
-
+			setStarting(true)
 			if (!restart.current) {
 				// action restart pomodoro
-				restartPomodoro(new Date(Date.now()))
+				dateStart.current = new Date(Date.now())
 				restart.current = true
 			}
 		} else {
 			// action pause pomodoro
 			pausePomodoro()
+			setStarting(false)
 		}
-	}, [pausePomodoro, playStart, restartPomodoro, startPomodoro])
+	}, [playStart, starting, startPomodoro, pausePomodoro])
 
 	const handleStop = useCallback(() => {
 		playStart()
 		const newTask = {
-			dateStart: pomodoroSetting.dateStart,
+			dateStart: dateStart.current,
 			dateFin: new Date(Date.now()),
 			name: task,
-			time,
+			time: time.current,
 		}
 		addTask(newTask)
-		starting.current = false
+		setStarting(false)
 		restart.current = false
 		stopPomodoro()
 		resetPomodoro()
 		setTask('')
-		setTime(0)
+		time.current = 0
 		resetMode()
 		toast({
 			status: 'success',
@@ -174,7 +162,6 @@ const Pomodoro = () => {
 	}, [
 		addTask,
 		playStart,
-		pomodoroSetting.dateStart,
 		resetMode,
 		resetPomodoro,
 		stopPomodoro,
@@ -188,7 +175,7 @@ const Pomodoro = () => {
 			setTask(task)
 			submitForm()
 			if (oldTask !== task) {
-				setTime(0)
+				time.current = 0
 				resetPomodoro()
 			}
 		},
@@ -212,7 +199,7 @@ const Pomodoro = () => {
 				justifyContent='center'
 			>
 				<ButtonCustom
-					text={starting.current ? 'Pause' : 'Start'}
+					text={starting ? 'Pause' : 'Start'}
 					onClick={handleStartOrPause}
 					disabled={pomodoroSetting.disableStart}
 				/>

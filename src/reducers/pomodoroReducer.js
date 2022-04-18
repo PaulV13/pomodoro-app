@@ -3,8 +3,7 @@ export const POMODORO_ACTIONS = {
 	RESTART_POMODORO: 1,
 	PAUSE_POMODORO: 2,
 	STOP_POMODORO: 3,
-	NEXT_POMODORO: 4,
-	FOCUS_FORM: 5,
+	FOCUS_FORM: 4,
 }
 
 export const pomodoroReducer = (state, action) => {
@@ -12,16 +11,13 @@ export const pomodoroReducer = (state, action) => {
 		case POMODORO_ACTIONS.START_POMODORO:
 			return {
 				...state,
+				disableStop: false,
 				disableForm: true,
 				disableNext: false,
-				disableStop: false,
 			}
 		case POMODORO_ACTIONS.RESTART_POMODORO:
 			return {
 				...state,
-				disableForm: true,
-				disableNext: false,
-				disableStop: false,
 				dateStart: action.dateStart,
 			}
 		case POMODORO_ACTIONS.PAUSE_POMODORO:
@@ -34,17 +30,12 @@ export const pomodoroReducer = (state, action) => {
 			return {
 				...state,
 				disableForm: false,
-				disableStop: true,
-			}
-		case POMODORO_ACTIONS.NEXT_POMODORO:
-			return {
-				...state,
-				disableStop: action.disableStop,
 			}
 		case POMODORO_ACTIONS.FOCUS_FORM:
 			return {
 				...state,
 				disableStart: true,
+				disableStop: true,
 			}
 		case POMODORO_ACTIONS.SUBMIT_FORM:
 			return {
