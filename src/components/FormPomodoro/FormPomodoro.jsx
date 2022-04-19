@@ -38,16 +38,11 @@ const FormPomodoro = ({ onSubmit, onFocus, disableForm, task, setTask }) => {
 					background='brand.900'
 					color='#eee'
 					ml={2}
-					_hover={{
-						background: 'brand.700',
-						_disabled: {
-							background: 'brand.900',
-						},
-					}}
+					_hover={{}}
 					_focus={{
 						boxShadow: 'none',
 					}}
-					disabled={disableForm}
+					disabled={task === '' ? true : disableForm}
 				>
 					Save
 				</Button>

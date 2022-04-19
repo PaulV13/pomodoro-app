@@ -1,7 +1,7 @@
 import { useReducer } from 'react'
 import { pomodoroReducer, POMODORO_ACTIONS } from '../reducers/pomodoroReducer'
 
-const usePomodoro = () => {
+const usePomodoroSetting = () => {
 	const [pomodoroSetting, setButtonPomodoroSetting] = useReducer(
 		pomodoroReducer,
 		{
@@ -52,4 +52,4 @@ const usePomodoro = () => {
 	}
 }
 
-export default usePomodoro
+export default usePomodoroSetting

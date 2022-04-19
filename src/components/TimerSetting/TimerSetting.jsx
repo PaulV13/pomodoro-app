@@ -160,9 +160,7 @@ const TimerSetting = () => {
 							colorScheme='blue'
 							background='brand.900'
 							color='#eee'
-							_hover={{
-								background: 'brand.700',
-							}}
+							_hover={{}}
 							_focus={{
 								boxShadow: 'none',
 							}}

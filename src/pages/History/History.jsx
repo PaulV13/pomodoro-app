@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box, Button, Link } from '@chakra-ui/react'
 import { Link as RouterLink } from 'react-router-dom'
 import { MdOutlineArrowBack } from 'react-icons/md'
@@ -36,4 +36,4 @@ const History = () => {
 	)
 }
 
-export default History
+export default React.memo(History)

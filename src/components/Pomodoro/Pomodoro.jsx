@@ -5,27 +5,26 @@ import useModeContext from '../../hooks/useModeContext'
 import CircularProgressCustom from '../CircularProgressCustom/CircularProgressCustom'
 import FormPomodoro from '../FormPomodoro/FormPomodoro'
 import usePomodoroContext from '../../hooks/usePomodoroContext'
-import usePomodoro from '../../hooks/usePomodoro.js'
+import usePomodoroSetting from '../../hooks/usePomodoro.js'
 import useTask from '../../hooks/useTask.js'
 import { MdTaskAlt } from 'react-icons/md'
 
 const Pomodoro = () => {
 	const { pomodoroTime } = usePomodoroContext()
 	const { mode, toggleMode, resetMode } = useModeContext()
+	const {
+		startPomodoro,
+		focusForm,
+		stopPomodoro,
+		submitForm,
+		pomodoroSetting,
+	} = usePomodoroSetting()
+	const { tasks, addTask } = useTask()
+	const toast = useToast()
 	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
 	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
 	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
 	const [task, setTask] = useState('')
-	const {
-		startPomodoro,
-		pausePomodoro,
-		focusForm,
-		stopPomodoro,
-		pomodoroSetting,
-		submitForm,
-	} = usePomodoro()
-	const { tasks, addTask } = useTask()
-	const toast = useToast()
 	const [starting, setStarting] = useState(false)
 	const dateStart = useRef(null)
 	const time = useRef(0)
@@ -57,7 +56,6 @@ const Pomodoro = () => {
 				if (mode.mode === 'modeLongBreak') {
 					setLongBreak(prevLongBreak => prevLongBreak - 1)
 				}
-				// setTime(time => time + 1)
 				time.current = time.current + 1
 			} else {
 				clearInterval(intervalId)
@@ -118,10 +116,10 @@ const Pomodoro = () => {
 			}
 		} else {
 			// action pause pomodoro
-			pausePomodoro()
+			stopPomodoro()
 			setStarting(false)
 		}
-	}, [playStart, starting, startPomodoro, pausePomodoro])
+	}, [playStart, starting, startPomodoro, stopPomodoro])
 
 	const handleStop = useCallback(() => {
 		playStart()

@@ -1,17 +1,12 @@
-import { useReducer } from 'react'
-import { taskReducer, TASK_ACTIONS } from '../reducers/taskReducer'
+import { useState } from 'react'
 
 const useTask = () => {
-	const [tasks, setTasks] = useReducer(
-		taskReducer,
+	const [tasks, setTasks] = useState(
 		JSON.parse(window.localStorage.getItem('tasks')) || []
 	)
 
 	const addTask = task => {
-		setTasks({
-			type: TASK_ACTIONS.ADD_TASK,
-			task,
-		})
+		setTasks([...tasks, task])
 	}
 
 	return {
