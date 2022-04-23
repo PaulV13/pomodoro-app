@@ -15,7 +15,7 @@ import {
 const Pomodoro = () => {
 	const { pomodoroTime } = usePomodoroContext()
 	const { mode, toggleMode, resetMode } = useModeContext()
-	const { task, addNameTask, addTasks } = useTask()
+	const { nameTask, addNameTask, addTasks } = useTask()
 	const toast = useToast()
 	const dateStart = useRef(null)
 	const time = useRef(0)
@@ -46,6 +46,7 @@ const Pomodoro = () => {
 	])
 
 	useEffect(() => {
+		console.log('start pomodoro')
 		const intervalId = setInterval(() => {
 			if (disableElement.starting) {
 				if (mode.mode === 'modeWork') {
@@ -64,6 +65,7 @@ const Pomodoro = () => {
 	}, [disableElement.starting, mode.mode, pomodoroTime])
 
 	useEffect(() => {
+		console.log('reset pomodoro')
 		resetPomodoro()
 	}, [resetPomodoro])
 
@@ -86,6 +88,7 @@ const Pomodoro = () => {
 	}, [soundButton, resetPomodoro, toggleMode])
 
 	useEffect(() => {
+		console.log('pomodoro a 0')
 		if (pomodoro === 0 || shortBreak === 0 || longBreak === 0) {
 			soundAlarma()
 			handleNext()
@@ -114,7 +117,7 @@ const Pomodoro = () => {
 		const newTask = {
 			dateStart: dateStart.current,
 			dateFin: new Date(Date.now()),
-			name: task,
+			name: nameTask,
 			time: time.current,
 		}
 		addTasks(newTask)
@@ -151,9 +154,11 @@ const Pomodoro = () => {
 		})
 	}
 
-	const handleSubmit = ({ task, oldTask }) => {
-		if (task !== oldTask) {
-			addNameTask(task)
+	const handleSubmit = ({ nameTask, oldTask }) => {
+		console.log('nameTask: ', nameTask)
+		console.log('oldTask: ', oldTask)
+		if (nameTask !== oldTask) {
+			addNameTask(nameTask)
 			resetPomodoro()
 		}
 		setDisableElement({
@@ -195,7 +200,7 @@ const Pomodoro = () => {
 				onSubmit={handleSubmit}
 				onFocus={handleFocus}
 				disableForm={disableElement.disableForm}
-				task={task}
+				nameTask={nameTask}
 				addNameTask={addNameTask}
 			/>
 		</Box>

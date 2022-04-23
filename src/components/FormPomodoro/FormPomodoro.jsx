@@ -5,14 +5,14 @@ const FormPomodoro = ({
 	onSubmit,
 	onFocus,
 	disableForm,
-	task,
+	nameTask,
 	addNameTask,
 }) => {
 	const [oldTask, setOldTask] = useState('')
 
 	const handleSubmit = e => {
 		e.preventDefault()
-		onSubmit({ task, oldTask })
+		onSubmit({ nameTask, oldTask })
 	}
 
 	const handleChangeTask = e => {
@@ -31,7 +31,7 @@ const FormPomodoro = ({
 					w='50%'
 					onChange={handleChangeTask}
 					onFocus={handleFocus}
-					value={task}
+					value={nameTask}
 					disabled={disableForm}
 					placeholder='Write a task...'
 					_placeholder={{ color: 'gray.400' }}
@@ -48,7 +48,7 @@ const FormPomodoro = ({
 					_focus={{
 						boxShadow: 'none',
 					}}
-					disabled={task === '' ? true : disableForm}
+					disabled={nameTask === '' ? true : disableForm}
 				>
 					Save
 				</Button>
