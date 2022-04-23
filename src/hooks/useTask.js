@@ -4,7 +4,7 @@ const useTask = () => {
 	const [tasks, setTasks] = useState(
 		JSON.parse(window.localStorage.getItem('tasks')) || []
 	)
-	const [task, setTask] = useState('')
+	const [nameTask, setNameTask] = useState('')
 
 	useEffect(() => {
 		window.localStorage.setItem('tasks', JSON.stringify(tasks))
@@ -14,15 +14,15 @@ const useTask = () => {
 		setTasks([...tasks, t])
 	}
 
-	const addTask = task => {
-		setTask(task)
+	const addNameTask = task => {
+		setNameTask(task)
 	}
 
 	return {
 		tasks,
 		addTasks,
-		task,
-		addTask,
+		nameTask,
+		addNameTask,
 	}
 }
 

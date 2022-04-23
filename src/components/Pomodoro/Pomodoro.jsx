@@ -15,7 +15,7 @@ import {
 const Pomodoro = () => {
 	const { pomodoroTime } = usePomodoroContext()
 	const { mode, toggleMode, resetMode } = useModeContext()
-	const { task, addTask, addTasks } = useTask()
+	const { task, addNameTask, addTasks } = useTask()
 	const toast = useToast()
 	const dateStart = useRef(null)
 	const time = useRef(0)
@@ -121,7 +121,7 @@ const Pomodoro = () => {
 		resetMode()
 		time.current = 0
 		restart.current = false
-		addTask('')
+		addNameTask('')
 		setDisableElement({
 			type: POMODORO_ACTIONS.STOP_POMODORO,
 			pomodoroTime,
@@ -153,7 +153,7 @@ const Pomodoro = () => {
 
 	const handleSubmit = ({ task, oldTask }) => {
 		if (task !== oldTask) {
-			addTask(task)
+			addNameTask(task)
 			resetPomodoro()
 		}
 		setDisableElement({
@@ -196,7 +196,7 @@ const Pomodoro = () => {
 				onFocus={handleFocus}
 				disableForm={disableElement.disableForm}
 				task={task}
-				addTask={addTask}
+				addNameTask={addNameTask}
 			/>
 		</Box>
 	)
