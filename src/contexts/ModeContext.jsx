@@ -17,16 +17,25 @@ export const ModeContextProvider = ({ children }) => {
 				}
 			} else {
 				if (oldMode.count % 4 === 0) {
-					return { mode: 'modeLongBreak', count: oldMode.count }
+					return {
+						mode: 'modeLongBreak',
+						count: oldMode.count,
+					}
 				}
-				return { mode: 'modeBreak', count: oldMode.count }
+				return {
+					mode: 'modeBreak',
+					count: oldMode.count,
+				}
 			}
 		})
 	}, [])
 
 	const resetMode = useCallback(() => {
 		setMode(function () {
-			return { mode: 'modeWork', count: 1 }
+			return {
+				mode: 'modeWork',
+				count: 1,
+			}
 		})
 	}, [])
 

@@ -6,7 +6,7 @@ import { ModeContextProvider } from './contexts/ModeContext'
 import { PomodoroContextProvider } from './contexts/PomodoroContext'
 import theme from './theme.js'
 import './index.css'
-import App from './App.jsx'
+import App from './App'
 
 ReactDOM.render(
 	<React.StrictMode>

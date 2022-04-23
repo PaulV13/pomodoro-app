@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Button, Flex, Input } from '@chakra-ui/react'
 
-const FormPomodoro = ({ onSubmit, onFocus, disableForm, task, setTask }) => {
+const FormPomodoro = ({ onSubmit, onFocus, disableForm, task, addTask }) => {
 	const [oldTask, setOldTask] = useState('')
 
 	const handleSubmit = e => {
@@ -10,7 +10,7 @@ const FormPomodoro = ({ onSubmit, onFocus, disableForm, task, setTask }) => {
 	}
 
 	const handleChangeTask = e => {
-		setTask(e.target.value)
+		addTask(e.target.value)
 	}
 
 	const handleFocus = e => {

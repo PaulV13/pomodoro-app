@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import usePomodoroContext from '../../hooks/usePomodoroContext'
 import {
 	useDisclosure,
 	Modal,
@@ -24,7 +25,6 @@ import {
 	NumberDecrementStepper,
 } from '@chakra-ui/react'
 import { FiSettings } from 'react-icons/fi'
-import usePomodoroContext from '../../hooks/usePomodoroContext'
 
 const TimerSetting = () => {
 	const { pomodoroTime, updatePomodoro } = usePomodoroContext()

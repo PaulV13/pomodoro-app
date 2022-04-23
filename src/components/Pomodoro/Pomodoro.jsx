@@ -1,187 +1,170 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { Box, Flex, HStack, Text, useToast } from '@chakra-ui/react'
-import ButtonCustom from '../../components/ButtonCustom/ButtonCustom.jsx'
+import { useState, useEffect, useCallback, useRef, useReducer } from 'react'
+import { Box, Flex, Text, useToast } from '@chakra-ui/react'
+import usePomodoroContext from '../../hooks/usePomodoroContext'
 import useModeContext from '../../hooks/useModeContext'
+import useTask from '../../hooks/useTask'
 import CircularProgressCustom from '../CircularProgressCustom/CircularProgressCustom'
 import FormPomodoro from '../FormPomodoro/FormPomodoro'
-import usePomodoroContext from '../../hooks/usePomodoroContext'
-import usePomodoroSetting from '../../hooks/usePomodoro.js'
-import useTask from '../../hooks/useTask.js'
-import { MdTaskAlt } from 'react-icons/md'
+import ButtonCustom from '../../components/ButtonCustom/ButtonCustom'
+import { GiConfirmed } from 'react-icons/gi'
+import {
+	pomodoroReducer,
+	POMODORO_ACTIONS,
+} from '../../reducers/pomodoroReducer'
 
 const Pomodoro = () => {
 	const { pomodoroTime } = usePomodoroContext()
 	const { mode, toggleMode, resetMode } = useModeContext()
-	const {
-		startPomodoro,
-		focusForm,
-		stopPomodoro,
-		submitForm,
-		pomodoroSetting,
-	} = usePomodoroSetting()
-	const { tasks, addTask } = useTask()
+	const { task, addTask, addTasks } = useTask()
 	const toast = useToast()
-	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
-	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
-	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
-	const [task, setTask] = useState('')
-	const [starting, setStarting] = useState(false)
 	const dateStart = useRef(null)
 	const time = useRef(0)
 	const restart = useRef(false)
+	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
+	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
+	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
+	const [disableElement, setDisableElement] = useReducer(pomodoroReducer, {
+		disableForm: false,
+		disableStop: true,
+		disableStart: true,
+		starting: false,
+	})
 
-	useEffect(() => {
-		setPomodoro(pomodoroTime.maxPomodoro)
-		setShortBreak(pomodoroTime.maxShortBreak)
-		setLongBreak(pomodoroTime.maxLongBreak)
+	const resetPomodoro = useCallback(() => {
+		if (mode.mode === 'modeWork') {
+			setPomodoro(pomodoroTime.maxPomodoro)
+		} else if (mode.mode === 'modeBreak') {
+			setShortBreak(pomodoroTime.maxShortBreak)
+		} else if (mode.mode === 'modeLongBreak') {
+			setLongBreak(pomodoroTime.maxLongBreak)
+		}
 	}, [
+		mode.mode,
 		pomodoroTime.maxLongBreak,
 		pomodoroTime.maxPomodoro,
 		pomodoroTime.maxShortBreak,
 	])
 
 	useEffect(() => {
-		window.localStorage.setItem('tasks', JSON.stringify(tasks))
-	}, [tasks])
-
-	useEffect(() => {
 		const intervalId = setInterval(() => {
-			if (starting) {
+			if (disableElement.starting) {
 				if (mode.mode === 'modeWork') {
 					setPomodoro(prevPomodoro => prevPomodoro - 1)
-				}
-				if (mode.mode === 'modeBreak') {
-					setShortBreak(prevShortBreak => prevShortBreak - 1)
-				}
-				if (mode.mode === 'modeLongBreak') {
-					setLongBreak(prevLongBreak => prevLongBreak - 1)
+				} else if (mode.mode === 'modeBreak') {
+					setShortBreak(prevPomodoro => prevPomodoro - 1)
+				} else if (mode.mode === 'longBreak') {
+					setLongBreak(prevPomodoro => prevPomodoro - 1)
 				}
 				time.current = time.current + 1
 			} else {
 				clearInterval(intervalId)
 			}
 		}, 1000)
+		return () => clearInterval(intervalId)
+	}, [disableElement.starting, mode.mode, pomodoroTime])
 
-		return () => {
-			clearInterval(intervalId)
-		}
-	}, [mode.mode, pomodoro, starting])
-	console.log(pomodoro)
-	const playAlarma = useCallback(() => {
-		const audio = document.getElementById('alarma')
+	useEffect(() => {
+		resetPomodoro()
+	}, [resetPomodoro])
+
+	const soundAlarma = useCallback(() => {
+		const audio = document.querySelector('#alarma')
 		audio.volume = pomodoroTime.volume / 100
 		audio.play()
 	}, [pomodoroTime.volume])
 
-	const playStart = useCallback(() => {
-		const audio = document.getElementById('playStart')
+	const soundButton = useCallback(() => {
+		const audio = document.querySelector('#playStart')
 		audio.volume = pomodoroTime.volume / 100
 		audio.play()
 	}, [pomodoroTime.volume])
-
-	const resetPomodoro = useCallback(() => {
-		setPomodoro(pomodoroTime.maxPomodoro)
-		setShortBreak(pomodoroTime.maxShortBreak)
-		setLongBreak(pomodoroTime.maxLongBreak)
-	}, [
-		pomodoroTime.maxLongBreak,
-		pomodoroTime.maxPomodoro,
-		pomodoroTime.maxShortBreak,
-	])
 
 	const handleNext = useCallback(() => {
-		playStart()
-		toggleMode()
+		soundButton()
 		resetPomodoro()
-	}, [playStart, toggleMode, resetPomodoro])
+		toggleMode()
+	}, [soundButton, resetPomodoro, toggleMode])
 
 	useEffect(() => {
 		if (pomodoro === 0 || shortBreak === 0 || longBreak === 0) {
-			playAlarma()
+			soundAlarma()
 			handleNext()
 		}
-	}, [playAlarma, handleNext, pomodoro, shortBreak, longBreak])
+	}, [handleNext, longBreak, pomodoro, shortBreak, soundAlarma])
 
-	const handleStartOrPause = useCallback(() => {
-		playStart()
-
-		if (!starting) {
-			// action start pomodoro
-			startPomodoro()
-			setStarting(true)
-			if (!restart.current) {
-				// action restart pomodoro
-				dateStart.current = new Date(Date.now())
-				restart.current = true
-			}
-		} else {
-			// action pause pomodoro
-			stopPomodoro()
-			setStarting(false)
+	const handleStartOrPause = () => {
+		soundButton()
+		if (!restart.current) {
+			dateStart.current = new Date(Date.now())
+			restart.current = true
 		}
-	}, [playStart, starting, startPomodoro, stopPomodoro])
+		if (!disableElement.starting) {
+			setDisableElement({
+				type: POMODORO_ACTIONS.START_POMODORO,
+			})
+		} else {
+			setDisableElement({
+				type: POMODORO_ACTIONS.PAUSE_POMODORO,
+			})
+		}
+	}
 
-	const handleStop = useCallback(() => {
-		playStart()
+	const handleStop = () => {
+		soundButton()
 		const newTask = {
 			dateStart: dateStart.current,
 			dateFin: new Date(Date.now()),
 			name: task,
 			time: time.current,
 		}
-		addTask(newTask)
-		setStarting(false)
-		restart.current = false
-		stopPomodoro()
-		resetPomodoro()
-		setTask('')
-		time.current = 0
+		addTasks(newTask)
 		resetMode()
+		time.current = 0
+		restart.current = false
+		addTask('')
+		setDisableElement({
+			type: POMODORO_ACTIONS.STOP_POMODORO,
+			pomodoroTime,
+		})
+		resetPomodoro()
 		toast({
-			status: 'success',
-			duration: 2000,
-			isClosable: true,
+			position: 'bottom',
+			duration: 1000,
 			render: () => (
-				<Box
-					bg='brand.900'
-					color='white'
-					py={4}
-					px={3}
+				<Flex
+					alignItems='center'
+					justifyContent='center'
+					color='brand.900'
+					py={2}
+					bg='white'
 					borderRadius='8px'
-					textAlign='center'
+					border='1px solid'
+					borderColor='brand.900'
+					mb='30px'
 				>
-					<HStack justifyContent='center'>
-						<MdTaskAlt />
-						<Text>Task saved in the history!!!!</Text>
-					</HStack>
-				</Box>
+					<GiConfirmed />
+					<Text ml={4} fontWeight='bold'>
+						Task saved in the history!!!
+					</Text>
+				</Flex>
 			),
 		})
-	}, [
-		addTask,
-		playStart,
-		resetMode,
-		resetPomodoro,
-		stopPomodoro,
-		task,
-		time,
-		toast,
-	])
+	}
 
-	const handleSubmit = useCallback(
-		({ task, oldTask }) => {
-			setTask(task)
-			submitForm()
-			if (oldTask !== task) {
-				time.current = 0
-				resetPomodoro()
-			}
-		},
-		[resetPomodoro, submitForm]
-	)
+	const handleSubmit = ({ task, oldTask }) => {
+		if (task !== oldTask) {
+			addTask(task)
+			resetPomodoro()
+		}
+		setDisableElement({
+			type: POMODORO_ACTIONS.SUBMIT_FORM,
+		})
+	}
 
 	const handleFocus = () => {
-		focusForm()
+		setDisableElement({
+			type: POMODORO_ACTIONS.FOCUS_FORM,
+		})
 	}
 
 	return (
@@ -197,27 +180,23 @@ const Pomodoro = () => {
 				justifyContent='center'
 			>
 				<ButtonCustom
-					text={starting ? 'Pause' : 'Start'}
+					text={disableElement.starting ? 'Pause' : 'Start'}
 					onClick={handleStartOrPause}
-					disabled={pomodoroSetting.disableStart}
+					disabled={disableElement.disableStart}
 				/>
 				<ButtonCustom
 					text='Stop'
 					onClick={handleStop}
-					disabled={pomodoroSetting.disableStop}
+					disabled={disableElement.disableStop}
 				/>
-				<ButtonCustom
-					text='Next'
-					onClick={handleNext}
-					disabled={pomodoroSetting.disableNext}
-				/>
+				<ButtonCustom text='Next' onClick={handleNext} disabled={false} />
 			</Flex>
 			<FormPomodoro
 				onSubmit={handleSubmit}
 				onFocus={handleFocus}
-				disableForm={pomodoroSetting.disableForm}
+				disableForm={disableElement.disableForm}
 				task={task}
-				setTask={setTask}
+				addTask={addTask}
 			/>
 		</Box>
 	)

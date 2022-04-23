@@ -1,8 +1,8 @@
 import useModeContext from './hooks/useModeContext'
 import { Route, Routes } from 'react-router-dom'
 import { Stack, Container } from '@chakra-ui/react'
-import Home from './pages/Home/Home.jsx'
-import History from './pages/History/History.jsx'
+import Home from './pages/Home/Home'
+import History from './pages/History/History'
 
 function App() {
 	const { mode } = useModeContext()
