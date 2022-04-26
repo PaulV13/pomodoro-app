@@ -3,8 +3,6 @@ import useModeContext from '../../hooks/useModeContext'
 import Pomodoro from '../../components/Pomodoro/Pomodoro'
 import TimerSetting from '../../components/TimerSetting/TimerSetting'
 import { Box, Button, Flex, Text, Link } from '@chakra-ui/react'
-import alarma from '../../assets/telefono.mp3'
-import apretarBoton from '../../assets/apretar-boton.mp3'
 import { BsClockHistory } from 'react-icons/bs'
 
 function Home() {
@@ -56,8 +54,6 @@ function Home() {
 					History
 				</Button>
 			</Link>
-			<audio id='alarma' src={alarma} />
-			<audio id='playStart' src={apretarBoton} />
 		</Box>
 	)
 }

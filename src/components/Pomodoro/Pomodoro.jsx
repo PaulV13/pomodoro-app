@@ -11,6 +11,8 @@ import {
 	pomodoroReducer,
 	POMODORO_ACTIONS,
 } from '../../reducers/pomodoroReducer'
+import alarmaSound from '../../assets/telefono.mp3'
+import apretarBotonSound from '../../assets/apretar-boton.mp3'
 
 const Pomodoro = () => {
 	const { pomodoroTime } = usePomodoroContext()
@@ -20,6 +22,8 @@ const Pomodoro = () => {
 	const dateStart = useRef(null)
 	const time = useRef(0)
 	const restart = useRef(false)
+	const alarma = useRef()
+	const apretarBoton = useRef()
 	const [pomodoro, setPomodoro] = useState(pomodoroTime.maxPomodoro)
 	const [shortBreak, setShortBreak] = useState(pomodoroTime.maxShortBreak)
 	const [longBreak, setLongBreak] = useState(pomodoroTime.maxLongBreak)
@@ -70,15 +74,13 @@ const Pomodoro = () => {
 	}, [resetPomodoro])
 
 	const soundAlarma = useCallback(() => {
-		const audio = document.querySelector('#alarma')
-		audio.volume = pomodoroTime.volume / 100
-		audio.play()
+		alarma.current.volume = pomodoroTime.volume / 100
+		alarma.current.play()
 	}, [pomodoroTime.volume])
 
 	const soundButton = useCallback(() => {
-		const audio = document.querySelector('#playStart')
-		audio.volume = pomodoroTime.volume / 100
-		audio.play()
+		apretarBoton.current.volume = pomodoroTime.volume / 100
+		apretarBoton.current.play()
 	}, [pomodoroTime.volume])
 
 	const handleNext = useCallback(() => {
@@ -203,6 +205,8 @@ const Pomodoro = () => {
 				nameTask={nameTask}
 				addNameTask={addNameTask}
 			/>
+			<audio src={alarmaSound} ref={alarma} />
+			<audio src={apretarBotonSound} ref={apretarBoton} />
 		</Box>
 	)
 }
