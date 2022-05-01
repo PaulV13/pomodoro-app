@@ -50,7 +50,6 @@ const Pomodoro = () => {
 	])
 
 	useEffect(() => {
-		console.log('start pomodoro')
 		const intervalId = setInterval(() => {
 			if (disableElement.starting) {
 				if (mode.mode === 'modeWork') {
@@ -69,7 +68,6 @@ const Pomodoro = () => {
 	}, [disableElement.starting, mode.mode, pomodoroTime])
 
 	useEffect(() => {
-		console.log('reset pomodoro')
 		resetPomodoro()
 	}, [resetPomodoro])
 
@@ -90,7 +88,6 @@ const Pomodoro = () => {
 	}, [soundButton, resetPomodoro, toggleMode])
 
 	useEffect(() => {
-		console.log('pomodoro a 0')
 		if (pomodoro === 0 || shortBreak === 0 || longBreak === 0) {
 			soundAlarma()
 			handleNext()
@@ -157,8 +154,6 @@ const Pomodoro = () => {
 	}
 
 	const handleSubmit = ({ nameTask, oldTask }) => {
-		console.log('nameTask: ', nameTask)
-		console.log('oldTask: ', oldTask)
 		if (nameTask !== oldTask) {
 			addNameTask(nameTask)
 			resetPomodoro()
