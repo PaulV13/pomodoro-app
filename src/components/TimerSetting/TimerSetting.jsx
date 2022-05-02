@@ -85,7 +85,7 @@ const TimerSetting = () => {
 					/>
 					<ModalBody pb={6}>
 						<FormControl mt={4}>
-							<FormLabel>Pomodoro</FormLabel>
+							<FormLabel>Work</FormLabel>
 							<NumberInput
 								value={valuePomodoro}
 								min={1}
@@ -127,7 +127,7 @@ const TimerSetting = () => {
 							</NumberInput>
 						</FormControl>
 						<FormControl mt={4}>
-							<FormLabel>Alert volume</FormLabel>
+							<FormLabel>Sound volume</FormLabel>
 							<Slider
 								id='slider'
 								defaultValue={pomodoroTime.volume}

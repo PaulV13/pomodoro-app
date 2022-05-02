@@ -155,7 +155,7 @@ const Pomodoro = () => {
 
 	const handleSubmit = ({ nameTask, oldTask }) => {
 		if (nameTask !== oldTask) {
-			addNameTask(nameTask)
+			addNameTask(nameTask.trim())
 			resetPomodoro()
 		}
 		setDisableElement({

@@ -48,7 +48,7 @@ const FormPomodoro = ({
 					_focus={{
 						boxShadow: 'none',
 					}}
-					disabled={nameTask === '' ? true : disableForm}
+					disabled={nameTask.trim() === '' ? true : disableForm}
 				>
 					Save
 				</Button>
